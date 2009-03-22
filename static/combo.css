@@ -1,0 +1,17 @@
+.combo_style {
+  border: 1px solid #777; 
+  background-color: #cff; 
+  position: absolute;
+  list-style-type: none;
+  z-index: 99;
+}
+
+.active_ {
+  list-style-type: none;
+  background-color: #acc;
+}
+
+.inactive_ {
+  list-style-type: none;
+}
+

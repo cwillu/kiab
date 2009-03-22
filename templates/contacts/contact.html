@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta name="verify-v1" content="tasE1XaBrCBulc5wEzuT4RocTBnZ0f18824WGAwujmE=" />
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />    
+    <link rel="stylesheet" href="style.css" />
+    <title>{% block title %}Contact{% endblock %}</title>
+    
+    <style type="text/css">
+      @import "/static/css/style.css";
+    </style>
+    <style type="text/css" media="screen">
+      @import "/static/css/screen.css";
+    </style>
+    <style type="text/css" media="print">
+      @import "/static/css/print.css";
+    </style>
+    <style type="text/css">
+      @import "/static/css/wiab.css";
+    </style>
+    <style type="text/css">
+      body {
+        font-size: 88%;
+        font: 14px Helvetica, sans-serif;
+      }
+      body > div {
+        margin-top: 1em;
+      } 
+      table {
+        width: 60%;    
+        padding-left: 5px;    
+      }
+      td {
+        vertical-align: top;
+        border: 0;
+        padding: 0px 2px;
+        white-space: nowrap;
+        font-weight: 100;
+        margin: 0;
+        table-spacing: 1px;
+      }
+      .delete {
+        color: #f99;
+      }
+      
+      b {
+        font-weight: 800;
+      }
+      
+      body > div.header {
+        float: right;
+        
+        margin: 0;         
+      }
+      body > .header span {
+      }
+      body > .header input{
+        width: 30em;              
+      }
+      
+      .details input.heading  {
+        border: 1px solid #fff;
+        font-size: 150%;
+        font-weight: 600;
+        width: 60%;
+      }
+      .details input {
+        width: 100%;
+        border: 1px solid #fff;
+        border-bottom: 1px dashed #888;        
+      }
+      .details textarea {
+        width: 100%;
+        border: 1px solid #fff;
+        border: 1px dotted #ddd;        
+        border-bottom: 1px dashed #888;        
+      }
+      .details input:hover,.details textarea:hover {
+        border: 1px dotted #888;        
+        border-bottom: 1px dashed #000;        
+      }
+      
+      div.palette {
+        background-color: #bbb;
+        height: 1.5em;
+      }
+      .palette > div {
+        width: 7em;
+        display: inline-block;
+        border-top: 1px solid #bbb;
+        border-right: 1px dashed #ddd;
+        text-align: center;
+        height: 1.5em;
+      }
+      .palette .widget:hover {
+        margin: -1px;
+        margin-right: 0px;
+        border: 1px dotted #888;
+      }
+      
+      .comments {
+        margin-top: 1em;
+      }
+      .comments * {
+        margin-top: .2em;
+      }
+      .comments .header {
+        background-color: #ddd;
+        padding-left: 5px;
+        height: 1.5em;         
+      }
+      .palette .label > span, .comments .header > .label {
+        color: #666;
+        font-size: 80%;        
+      }
+      .comments .header > .detail {
+        color: #333;
+        display: inline-block;
+      }
+      .comments .content {
+        margin-left: 1em;
+      } 
+      .comments p {
+        white-space: pre;
+        margin-bottom: .7em;     
+      }
+      .comments textarea {
+        width: 40em;
+        height: 10em;
+      }
+    </style>
+    <script src="/static/javascript/jquery-1.2.6.js"></script>
+    <script src="/static/javascript/ui.core.js"></script>    
+</head>
+<body>
+  <div class="header">
+    <form action="/search/" method="POST">
+      <input type="text" name="search" value="Find another contact..." />
+    </form>
+  </div>
+
+  <form class="details" action="/contact/" method="POST">
+    <input type="text" class="heading" name="name" value="Carey Underwood" />
+  
+    <table>    
+    {% for row in details|batch(2,) %}    
+      <tr>
+      {% for widget in row %}
+        <td>{{ widget.render() if widget }}</td><td class="delete">[x]</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </table>
+  </form>
+  <div class="palette">
+    <div class="label"><span>Add another:</span></div>
+    {%- for widget in available -%}    
+      <div class="widget"><span>{{ widget.render_generic() }}</span></div>
+    {%- endfor -%}
+  </div>
+  
+  <div class="comments">
+    {% for comment in comments %}
+      <div class="comment">
+        <div class="header">
+          <span class="detail">{{ comment.who }}</span><span class="label">, on</span>
+          <span class="detail">{{ comment.when }}</span><span class="label">:</span>
+        </div>
+        <div class="content">
+        {% for line in comment.data -%}
+          <p>{{ line|wordwrap(80) }}</p>
+        {%- endfor %}
+        </div>
+      </div>
+    {% endfor %}
+    <div class="header">
+      <div>Add a comment:</div>
+    </div>
+    <div class="content">
+      <form action="/comment/" method="POST">
+        <textarea name="comment"></textarea>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
