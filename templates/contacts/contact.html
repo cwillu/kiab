@@ -27,7 +27,7 @@
         margin-top: 1em;
       } 
       table {
-        width: 60%;    
+        width: 60%;
         padding-left: 5px;    
       }
       td {
@@ -39,12 +39,20 @@
         margin: 0;
         table-spacing: 1px;
       }
-      .delete {
+      .delete a {
         color: #f99;
+      }
+      .delete a:hover {
+        color: #f00;
       }
       
       b {
         font-weight: 800;
+      }
+      
+      .action a {
+        text-decoration: none;
+        color: none;
       }
       
       body > div.header {
@@ -98,6 +106,10 @@
         border: 1px dotted #888;
       }
       
+      .palette .widgetPrototype {
+        display: none;
+      }
+      
       .comments {
         margin-top: 1em;
       }
@@ -129,8 +141,11 @@
         height: 10em;
       }
     </style>
-    <script src="/static/javascript/jquery-1.2.6.js"></script>
-    <script src="/static/javascript/ui.core.js"></script>    
+    <script src="/media/jquery-latest.js"></script>
+    <script src="/media/jquery.color.js"></script>
+    <script src="/media/ui.core.js"></script>
+    <script src="/media/wiab_tools.js"></script>
+    <script src="/media/kiab.js"></script>            
 </head>
 <body>
   <div class="header">
@@ -139,23 +154,28 @@
     </form>
   </div>
 
-  <form class="details" action="/contact/" method="POST">
-    <input type="text" class="heading" name="name" value="Carey Underwood" />
+  <form id="details" class="details" action="/contact/" method="POST">
+    <input type="text" class="heading" name="name" value="{{ contact.name if contact else "[type a name here]" }}" />
   
-    <table>    
-    {% for row in details|batch(2,) %}    
+    <table class="detailTable" style="height: 100px;">
+    {% for row in details|batch(2,) -%}    
       <tr>
-      {% for widget in row %}
-        <td>{{ widget.render() if widget }}</td><td class="delete">[x]</td>
-      {% endfor %}
+      {%- for widget in row -%}
+        <td>{{ widget.render() if widget }}</td><td class="action delete"><a href="#">[x]</a></td>
+      {%- endfor -%}
       </tr>
-    {% endfor %}
+    {%- endfor -%}
     </table>
   </form>
   <div class="palette">
     <div class="label"><span>Add another:</span></div>
     {%- for widget in available -%}    
-      <div class="widget"><span>{{ widget.render_generic() }}</span></div>
+      <div class="widget">
+        <span>{{ widget.render_generic() }}</span>
+        <div class="widgetPrototype">
+          <table class="detailTable"><tr><td>{{ widget.render() }}</td><td class="action delete"><a href="#">[x]</a></td><td width="50%"></td></tr></table>
+        </div>
+      </div>
     {%- endfor -%}
   </div>
   

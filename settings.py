@@ -4,7 +4,7 @@ from os import path
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-
+PRODUCTION = False
 
 ADMINS = (
     ('Carey Underwood', 'cwillu@cwillu.com'),

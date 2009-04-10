@@ -4,34 +4,52 @@ import cPickle as pickle
 import django.contrib.auth.models as auth
 
 class Widget(object):
-  @classmethod
   def render_generic(self):
-    return "<span>%s</span>" % str(self.__name__)
+    return "<span>%s</span>" % self.name()
+
+  def name(self):
+    return self.__class__.__name__
+    
+  def create(self, *args, **kargs):
+    return self.__class__.__new__(*args, **kargs)
 
 class Address(Widget):
-  def __init__(self, data):
+  def __init__(self, data=''):
     self.data = data
     
-  def render(self):
+  def render(self, id=None):
+    if id:
+      id = "id=%s" % id
+    else:
+      id = ''
+      
     return '''
-    <textarea rows="5">%s</textarea>
-    '''.strip() % self.data
+    <textarea %s class="control" rows="5">%s</textarea>
+    '''.strip() % (id, self.data)
   
 class Phone(Widget):
-  def __init__(self, data):
+  def __init__(self, data=''):
     self.data = data
-  def render(self):
+  def render(self, id=None):
+    if id:
+      id = "id=%s" % id
+    else:
+      id = ''
     return '''
-    <input type="text" rows="5" value="%s" />
-    '''.strip() % self.data
+    <input %s class="control" type="text" rows="5" value="%s" />
+    '''.strip() % (id, self.data)
 
 class Email(Widget):
-  def __init__(self, data):
+  def __init__(self, data=''):
     self.data = data
-  def render(self):
+  def render(self, id=None):
+    if id:
+      id = "id=%s" % id
+    else:
+      id = ''
     return '''
-    <input type="text" rows="5" value="%s" />
-    '''.strip() % self.data
+    <input %s class="control" type="text" rows="5" value="%s" />
+    '''.strip() % (id, self.data)
 
 class Comment(Widget):
   def __init__(self, who, when, data):
@@ -49,7 +67,7 @@ class Comment(Widget):
     '''.strip() % (self.who, self.when, self.data)
   
   
-widgets = dict(address=Address, phone=Phone, email=Email)
+widgets = dict(address=Address(), phone=Phone(), email=Email())
 
 
 # keep fields an order of magnitude larger than the largest input expected
@@ -70,6 +88,7 @@ class Contact(models.Model):
     return self.name 
 
 class Detail(models.Model):
+  uuid = models.CharField(max_length=36)
   contact = models.ForeignKey(Contact)
   position = models.IntegerField()
   detailType = models.CharField(max_length=200, verbose_name="type")
@@ -81,6 +100,7 @@ class Detail(models.Model):
   def get(self):
     obj = pickle.loads(self.data)
     obj.id = self.id
+    obj.uuid = self.uuid
     return obj
     
 class Entry(models.Model):

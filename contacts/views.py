@@ -30,8 +30,14 @@ testComments = [
   models.Comment('Christoph Korn', '2009-03-03', '* data loss in jaunty (full upgraded) (307.6 KiB, image/png)\n\nI can confirm this data loss in jaunty.\nI installed all updates before trying the script in this comment:\nhttps://bugs.launchpad.net/ubuntu/jaunty/+source/linux/+bug/317781/comments/29\n\nI am testing jaunty in virtualbox.\n\nI have put the script on the desktop. I started it and turned the virtual machine off after some seconds.\n\nAfter reboot all files (also the script itself) are 0Byte and I cannot even open them with gedit.'),
 ]
 
-def createContact():
-  pass
+def createContact(request):
+  template = jinja.get_template('contacts/contact.html')
+  context = {
+    'available': models.widgets.values(),
+    'details': [],
+    'comments': [],
+  }
+  return HttpResponse(template.render(**context))
 
 def contact(request, contactId):
   if contactId == 'test':
@@ -59,7 +65,7 @@ def update(request, contactId):
   contact = models.Contact.objects.get(id=int(contactId))
 
   detailId = request.POST.get('update', None)
-  detailType = request.POST['type']
+#  detailType = request.POST['type']
   detailConstructor = models.widgets[detailType]
   detailPosition = 0 #request.detailPosition
   detailData = request.POST['detail']
