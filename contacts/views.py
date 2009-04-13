@@ -5,6 +5,7 @@ from contacts import models
 from django.conf import settings
 from django.template import Context, loader, libraries
 from django.contrib.auth import decorators as auth
+from django.contrib.webdesign import lorem_ipsum
 
 from jinja2 import Environment, FileSystemLoader
 jinja = Environment(loader=FileSystemLoader(settings.TEMPLATE_DIRS))
@@ -17,17 +18,23 @@ import django.forms.widgets as widgets
 import models
 
 testDetails = [
-  models.Address('''1115 Cairns Ave\nSaskatoon, SK\nS7H 4G3'''.strip()),
-  models.Phone('306-251-0744'),
-  models.Phone('306-373-0552'),
-  models.Email('cwillu@cwillu.com'),
-  models.Email('cwillu@gmail.com'),
+  models.Long('''1115 Cairns Ave\nSaskatoon, SK\nS7H 4G3'''.strip()),
+  models.Short('306-251-0744'),
+  models.Short('306-373-0552'),
+  models.Short('cwillu@cwillu.com'),
+  models.Short('cwillu@gmail.com'),
 ]
 
+def makeName():
+  words = lorem_ipsum.words(3, 0).title().split()
+  words[1] = words[1][0]
+  return ' '.join(words)
+  
+
 testComments = [
-  models.Comment('Kai Mast', '2009-01-27', 'I can confirm this with AMD64 and Ubuntu Jaunty'),
-  models.Comment('Niclas L', '2009-01-29', ' I have experienced some issues with EXT4 and data losses too, but more extreme than you all describe. I installed jaunty alpha 3 two days ago and have all the updates installed. Since the install 2 days ago I have lost data on 3 occations. The most strange losses is:\n\n* the computer wiped out a whole network share mounted in fstab\n* the computer one time also removed ~/.icons when I empty the trash\n\nThe data losses never happened after a crasch or power failure.'),
-  models.Comment('Christoph Korn', '2009-03-03', '* data loss in jaunty (full upgraded) (307.6 KiB, image/png)\n\nI can confirm this data loss in jaunty.\nI installed all updates before trying the script in this comment:\nhttps://bugs.launchpad.net/ubuntu/jaunty/+source/linux/+bug/317781/comments/29\n\nI am testing jaunty in virtualbox.\n\nI have put the script on the desktop. I started it and turned the virtual machine off after some seconds.\n\nAfter reboot all files (also the script itself) are 0Byte and I cannot even open them with gedit.'),
+  models.Comment(makeName(), '2009-01-27', lorem_ipsum.paragraph()),
+  models.Comment(makeName(), '2009-01-29', *lorem_ipsum.paragraphs(3)),
+  models.Comment(makeName(), '2009-03-03', lorem_ipsum.paragraph()),
 ]
 
 def createContact(request):
@@ -41,7 +48,7 @@ def createContact(request):
 
 def contact(request, contactId):
   if contactId == 'test':
-    contact = models.Contact(name="Carey Underwood")
+    contact = models.Contact(name="Carey Underwood")  
     details = testDetails
     comments = testComments
   else:
@@ -60,24 +67,50 @@ def contact(request, contactId):
     'comments': comments,
   }
   return HttpResponse(template.render(**context))
+
+def updateName(request, contactId):
+  if contactId == 'test':
+    contact = models.Contact(name="Carey Underwood")
+  else: 
+    contact = models.Contact.objects.get(id=int(contactId))
+
+  print "contact", contact
+
+  name = request.POST['name'].strip()
+  print "name", name 
+  
+  contact.name = name
+  contact.save()
   
 def update(request, contactId):
-  contact = models.Contact.objects.get(id=int(contactId))
+  if contactId == 'test':
+    contact = models.Contact(name="Carey Underwood")
+  else: 
+    contact = models.Contact.objects.get(id=int(contactId))
+
+  print "contact", contact
 
   detailId = request.POST.get('update', None)
 #  detailType = request.POST['type']
-  detailConstructor = models.widgets[detailType]
-  detailPosition = 0 #request.detailPosition
-  detailData = request.POST['detail']
+  detailData = request.POST['detail'].strip()
+
+  print "id", detailId
+  print "detail", detailData
   
-  if detailId:
-    detail = models.Detail.objects.get(id=detailId, contact=contact, detailType=detailType)    
-  else:    
-    detail = models.Detail(contact=contact, detailType=detailType)    
+  if not detailData:
+    raise "delete"
+  elif '\n' in detailData:
+    detailType = 'Long'
+  else:
+    detailType = 'Short'
+  detailConstructor = models.widgets[detailType]
+
+  print "type", detailType
+  
+  detail = models.Detail.objects.get(uuid=detailId, contact=contact, detailType=detailType)    
         
-  detail.position = detailPosition #insert how?
   detail.put(detailConstructor(detailData))
-  detail.save()  
+  detail.save()
 
 def comment(request, contactId):
   contact = models.Contact.objects.get(id=int(contactId))

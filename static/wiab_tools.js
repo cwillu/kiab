@@ -7,11 +7,11 @@
 /*predef $,jQuery */
 
 jQuery.uuid = function () {
-  var chunk = function () {
-  	return ((Math.random()+1)*0x10000 | 0).toString(16).substring(1)
-  }
+  var h = function () { //'0000'-'ffff'
+  	return ((Math.random()+1)*0x10000 | 0).toString(16).substring(1);  	
+  };
 
-  return chunk() + chunk() + "-" + chunk() + "-"chunk() + "-" + chunk() + "-" + chunk() + chunk() + chunk()
+  return [h()+h(), h(), h(), h(), h()+h()+h()].join('-');
 };
 
 jQuery.scope = function () {      

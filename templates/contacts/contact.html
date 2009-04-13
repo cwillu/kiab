@@ -3,7 +3,6 @@
 <head>
     <meta name="verify-v1" content="tasE1XaBrCBulc5wEzuT4RocTBnZ0f18824WGAwujmE=" />
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" />    
-    <link rel="stylesheet" href="style.css" />
     <title>{% block title %}Contact{% endblock %}</title>
     
     <style type="text/css">
@@ -155,7 +154,7 @@
   </div>
 
   <form id="details" class="details" action="/contact/" method="POST">
-    <input type="text" class="heading" name="name" value="{{ contact.name if contact else "[type a name here]" }}" />
+    <input type="text" class="name heading" name="name" value="{{ contact.name if contact else "[type a name here]" }}" />
   
     <table class="detailTable" style="height: 100px;">
     {% for row in details|batch(2,) -%}    
@@ -173,7 +172,7 @@
       <div class="widget">
         <span>{{ widget.render_generic() }}</span>
         <div class="widgetPrototype">
-          <table class="detailTable"><tr><td>{{ widget.render() }}</td><td class="action delete"><a href="#">[x]</a></td><td width="50%"></td></tr></table>
+          <table class="detailTable"><tr><td>{{ widget.render() }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
         </div>
       </div>
     {%- endfor -%}

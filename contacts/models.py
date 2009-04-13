@@ -13,7 +13,7 @@ class Widget(object):
   def create(self, *args, **kargs):
     return self.__class__.__new__(*args, **kargs)
 
-class Address(Widget):
+class Long(Widget):
   def __init__(self, data=''):
     self.data = data
     
@@ -27,19 +27,7 @@ class Address(Widget):
     <textarea %s class="control" rows="5">%s</textarea>
     '''.strip() % (id, self.data)
   
-class Phone(Widget):
-  def __init__(self, data=''):
-    self.data = data
-  def render(self, id=None):
-    if id:
-      id = "id=%s" % id
-    else:
-      id = ''
-    return '''
-    <input %s class="control" type="text" rows="5" value="%s" />
-    '''.strip() % (id, self.data)
-
-class Email(Widget):
+class Short(Widget):
   def __init__(self, data=''):
     self.data = data
   def render(self, id=None):
@@ -52,10 +40,10 @@ class Email(Widget):
     '''.strip() % (id, self.data)
 
 class Comment(Widget):
-  def __init__(self, who, when, data):
+  def __init__(self, who, when, *data):
     self.who = who.strip()
     self.when = when.strip()
-    self.data = map(str.strip, data.splitlines())
+    self.data = [line.strip() for line in '\n'.join(data).splitlines()]
     
   def render(self):
     return '''
@@ -67,7 +55,7 @@ class Comment(Widget):
     '''.strip() % (self.who, self.when, self.data)
   
   
-widgets = dict(address=Address(), phone=Phone(), email=Email())
+widgets = dict(address=Short(), phone=Long())
 
 
 # keep fields an order of magnitude larger than the largest input expected

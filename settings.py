@@ -4,6 +4,7 @@ from os import path
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+DEBUG_PROPAGATE_EXCEPTIONS = False
 PRODUCTION = False
 
 ADMINS = (
