@@ -109,33 +109,33 @@
         display: none;
       }
       
-      .comments {
+      #comments {
         margin-top: 1em;
       }
-      .comments * {
+      #comments * {
         margin-top: .2em;
       }
-      .comments .header {
+      #comments .header {
         background-color: #ddd;
         padding-left: 5px;
         height: 1.5em;         
       }
-      .palette .label > span, .comments .header > .label {
+      .palette .label > span, #comments .header > .label {
         color: #666;
         font-size: 80%;        
       }
-      .comments .header > .detail {
+      #comments .header > .detail {
         color: #333;
         display: inline-block;
       }
-      .comments .content {
+      #comments .content {
         margin-left: 1em;
       } 
-      .comments p {
+      #comments p {
         white-space: pre;
         margin-bottom: .7em;     
       }
-      .comments textarea {
+      #comments textarea {
         width: 40em;
         height: 10em;
       }
@@ -155,7 +155,7 @@
 
   <form id="details" class="details" action="/contact/" method="POST">
     <input type="text" class="name heading" name="name" value="{{ contact.name if contact else "[type a name here]" }}" />
-  
+    <input type="hidden" name="uuid" value="{{ uuid }}" />
     <table class="detailTable" style="height: 100px;">
     {% for row in details|batch(2,) -%}    
       <tr>
@@ -178,15 +178,15 @@
     {%- endfor -%}
   </div>
   
-  <div class="comments">
+  <div id="comments">
     {% for comment in comments %}
       <div class="comment">
         <div class="header">
           <span class="detail">{{ comment.who }}</span><span class="label">, on</span>
-          <span class="detail">{{ comment.when }}</span><span class="label">:</span>
+          <span class="detail">{{ comment.date }}</span><span class="label">:</span>
         </div>
         <div class="content">
-        {% for line in comment.data -%}
+        {% for line in comment.entry -%}
           <p>{{ line|wordwrap(80) }}</p>
         {%- endfor %}
         </div>

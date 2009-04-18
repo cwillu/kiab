@@ -11,7 +11,7 @@ class Widget(object):
     return self.__class__.__name__
     
   def create(self, *args, **kargs):
-    return self.__class__.__new__(*args, **kargs)
+    return self.__class__(*args, **kargs)
 
 class Long(Widget):
   def __init__(self, data=''):
@@ -40,27 +40,19 @@ class Short(Widget):
     '''.strip() % (id, self.data)
 
 class Comment(Widget):
-  def __init__(self, who, when, *data):
+  def __init__(self, who, when, data):
     self.who = who.strip()
-    self.when = when.strip()
-    self.data = [line.strip() for line in '\n'.join(data).splitlines()]
+    self.date = when.strip()
+    self.entry = data
+
     
-  def render(self):
-    return '''
-    <div class="comment">
-      <span class="name">%s</span>
-      <span class="date">%s</span>
-      <span class="content">%s</span>
-    </div>
-    '''.strip() % (self.who, self.when, self.data)
-  
-  
-widgets = dict(address=Short(), phone=Long())
+widgets = dict(short=Short(), long=Long())
 
 
 # keep fields an order of magnitude larger than the largest input expected
 class Contact(models.Model):
   name = models.CharField(max_length=200)
+  uuid = models.SlugField()
   sortName = models.CharField(max_length=200)
   summary = models.TextField()
     
@@ -78,7 +70,6 @@ class Contact(models.Model):
 class Detail(models.Model):
   uuid = models.CharField(max_length=36)
   contact = models.ForeignKey(Contact)
-  position = models.IntegerField()
   detailType = models.CharField(max_length=200, verbose_name="type")
   data = models.TextField()
   
@@ -86,15 +77,28 @@ class Detail(models.Model):
     self.data = pickle.dumps(obj)
   
   def get(self):
-    obj = pickle.loads(self.data)
+    obj = pickle.loads(str(self.data))
     obj.id = self.id
     obj.uuid = self.uuid
     return obj
+  
+  detail = property(get, put)
     
 class Entry(models.Model):
   contact = models.ForeignKey(Contact)
   date = models.DateField()
-  who = models.ForeignKey('auth.User')
-  entry = models.TextField()
+  who = models.ForeignKey('auth.User', null=True)
+  data = models.TextField()
+  
+  def put(self, obj):
+    self.data = pickle.dumps(obj)
+  
+  def get(self):
+    if not self.data:
+      return []
+      
+    obj = pickle.loads(str(self.data))
+    return obj
+  entry = property(get, put)
   
 classes = [Contact, Detail, Entry]
