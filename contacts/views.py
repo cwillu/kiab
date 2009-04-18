@@ -169,6 +169,9 @@ def addComment(request, contactId):
     contact = models.Contact.objects.get(id=int(contactId))
 
   comment = request.POST['comment']
+  if not comment:
+    return HttpResponse(status=204)
+    
   print comment
   entry = models.Entry(contact=contact, date="2008-10-10") #todo, uuid
   entries = entry.entry
@@ -176,6 +179,7 @@ def addComment(request, contactId):
   entry.entry = entries
   print entry.entry
   entry.save()
+  assert entry.entry is not None
   if False:  #existing entry
     return HttpResponse(status=201)
   else:
