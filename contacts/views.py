@@ -97,7 +97,7 @@ def showContact(request, contactId):
 
 def updateName(request, contactId):
   contact_uuid = request.POST['uuid']
-  name = request.POST['name'].strip()
+  name = request.POST.get('name', '').strip()
   print "name", name
   print "id", contactId
   
@@ -117,14 +117,20 @@ def updateName(request, contactId):
   if contactId == 'create':
     response = HttpResponse(status=201)
     response['Location'] = reverse(showContact, args=[contact.id])
+    response['contact'] = contact.id
     return response
   else:
     return HttpResponse(status=204)
     
   
 def updateDetail(request, contactId):
+  response = None
   if contactId == 'test':
     contact = models.Contact(name="Carey Underwood")
+  elif contactId == 'create':
+    response = updateName(request, contactId)
+    contactId = response['contact']
+    contact = models.Contact.objects.get(id=int(contactId))
   else: 
     contact = models.Contact.objects.get(id=int(contactId))
 
@@ -148,23 +154,27 @@ def updateDetail(request, contactId):
   print "type", detailType
   
   count = len(models.Detail.objects.filter(uuid=detailId))
+  assert count in [0, 1], "How exactly is there more than one detail with this uuid? %s (%s)" % (detailId, count)
+  assert response is None or count is 0
   if count is 0:
     detail = models.Detail(uuid=detailId, contact=contact, detailType=detailType)
+    response = response or HttpResponse(status=205)
   elif count is 1:
     detail = models.Detail.objects.get(contact=contact, uuid=detailId)
-  else:
-    assert False, "How exactly is there more than one detail with this uuid? %s" % detailId
+    response = HttpResponse(status=204)
         
   detail.put(detailConstructor.create(detailData))
   detail.save()
-  if count is 0:
-    return HttpResponse(status=201)
-  else:
-    return HttpResponse(status=204)
+  return response
 
 def addComment(request, contactId):
+  response = None
   if contactId == 'test':
     contact = models.Contact(name="Carey Underwood")
+  elif contactId == 'create':
+    response = updateName(request, contactId)
+    contactId = response['contact']
+    contact = models.Contact.objects.get(id=int(contactId))
   else: 
     contact = models.Contact.objects.get(id=int(contactId))
 
@@ -183,7 +193,7 @@ def addComment(request, contactId):
   if False:  #existing entry
     return HttpResponse(status=201)
   else:
-    return HttpResponse(status=205)
+    return response or HttpResponse(status=205)
     
 #  class Entry(models.Model):
 #    contact = models.ForeignKey(Contact)

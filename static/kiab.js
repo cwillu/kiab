@@ -25,9 +25,19 @@ kiab = {
     }, 3000);
   },
   sendUpdate: function () {
-    $.post('updateDetail', {
-      update: this.id,
-      detail: this.value
+    $.ajax({
+      type: "POST",
+      url: "updateDetail",
+      data: {
+        update: this.id,
+        detail: this.value,
+        uuid: $("#details input[name='uuid']")[0].value
+      },
+      complete: function (http) {
+        if (http.status === 201) {
+          top.location.href = http.getResponseHeader('Location');
+        }        
+      }
     });
   },
   sendNameUpdate: function () {
@@ -42,7 +52,7 @@ kiab = {
         if (http.status === 201) {
           top.location.href = http.getResponseHeader('Location');
         }        
-      }      
+      }
     });
   },  
   sendComment: function () {
@@ -52,11 +62,14 @@ kiab = {
       data: {
         session_uuid: kiab.session_uuid,
         uuid: this.id,
-        comment: this.value
+        comment: this.value,
+        uuid: $("#details input[name='uuid']")[0].value
       },
       complete: function (http) {
         if (http.status === 205) {
           window.location.reload(false);
+        } else if (http.status === 201) {
+          top.location.href = http.getResponseHeader('Location');
         }        
       }      
     });

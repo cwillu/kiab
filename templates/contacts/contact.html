@@ -154,7 +154,7 @@
   </div>
 
   <form id="details" class="details" action="/contact/" method="POST">
-    <input type="text" class="name heading" name="name" value="{{ contact.name if contact else "[type a name here]" }}" />
+    <input type="text" class="name heading" name="name" value="{{ contact.name if contact and contact.name else "[type a name here]" }}" />
     <input type="hidden" name="uuid" value="{{ uuid }}" />
     <table class="detailTable" style="height: 100px;">
     {% for row in details|batch(2,) -%}    
