@@ -103,11 +103,11 @@ def updateName(request, contactId):
   
   if contactId == 'test':
     contact = models.Contact(name="Carey Underwood")
-  elif contactId == 'create': 
+  elif contactId == 'create':
     print models.Contact.objects.filter(uuid=contact_uuid)
     assert not models.Contact.objects.filter(uuid=contact_uuid)
     contact = models.Contact(uuid=contact_uuid)    
-  elif contactId is not None: 
+  elif contactId is not None:
     contact = models.Contact.objects.get(id=int(contactId), uuid=contact_uuid)
 
   print "contact", contact
