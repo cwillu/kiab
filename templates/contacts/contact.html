@@ -154,10 +154,10 @@
   </div>
 
   <form id="details" class="details" action="/contact/" method="POST">
-    <input type="text" class="name heading" name="name" value="{{ contact.name if contact and contact.name else "[type a name here]" }}" />
+    <input type="text" class="name heading" name="name" value="{{ contact.name if contact.name else "[type a name here]" }}" />
     <input type="hidden" name="uuid" value="{{ uuid }}" />
     <table class="detailTable" style="height: 100px;">
-    {% for row in details|batch(2,) -%}    
+    {% for row in contact.details |batch(2,) -%} 
       <tr>
       {%- for widget in row -%}
         <td>{{ widget.render() if widget }}</td><td class="action delete"><a href="#">[x]</a></td>
@@ -172,14 +172,14 @@
       <div class="widget">
         <span>{{ widget.render_generic() }}</span>
         <div class="widgetPrototype">
-          <table class="detailTable"><tr><td>{{ widget.render() }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
+          <table class="detailTable"><tr><td>{{ widget.render(widget.name()+'Widget') }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
         </div>
       </div>
     {%- endfor -%}
   </div>
   
   <div id="comments">
-    {% for comment in comments %}
+    {% for comment in contact.comments %}
       <div class="comment">
         <div class="header">
           <span class="detail">{{ comment.who }}</span><span class="label">, on</span>

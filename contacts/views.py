@@ -62,36 +62,23 @@ testComments = [
   models.Comment(makeName(), '2009-03-03', lorem_ipsum.paragraphs(1)),
 ]
 
-def createContact(request):
+def blankContact(request):
   template = jinja.get_template('contacts/contact.html')
   context = {
+    'contact': models.Contact(),
     'uuid': uuid(),
     'available': models.widgets.values(),
-    'details': [],
-    'comments': [],
   }
   return HttpResponse(template.render(**context))
 
 def showContact(request, contactId):
-  if contactId == 'test':
-    contact = models.Contact(name="Carey Underwood")  
-    details = testDetails
-    comments = testComments
-  else:
-    contact = models.Contact.objects.get(id=int(contactId))
-    
-    details = list(models.Detail.objects.filter(contact=contact))
-    details = [detail.get() for detail in details]
-    
-    comments = models.Entry.objects.filter(contact=contact)
+  contact = models.Contact.objects.get(id=int(contactId))
   
   template = jinja.get_template('contacts/contact.html')
   context = {
     'uuid': contact.uuid,
     'contact': contact,
     'available': models.widgets.values(),
-    'details': details,
-    'comments': comments,
   }
   return HttpResponse(template.render(**context))
 
@@ -101,11 +88,9 @@ def updateName(request, contactId):
   print "name", name
   print "id", contactId
   
-  if contactId == 'test':
-    contact = models.Contact(name="Carey Underwood")
-  elif contactId == 'create':
+  if contactId == 'create':
     print models.Contact.objects.filter(uuid=contact_uuid)
-    assert not models.Contact.objects.filter(uuid=contact_uuid)
+    assert not models.Contact.objects.filter(uuid=contact_uuid), contact_uuid
     contact = models.Contact(uuid=contact_uuid)    
   elif contactId is not None:
     contact = models.Contact.objects.get(id=int(contactId), uuid=contact_uuid)
@@ -125,14 +110,11 @@ def updateName(request, contactId):
   
 def updateDetail(request, contactId):
   response = None
-  if contactId == 'test':
-    contact = models.Contact(name="Carey Underwood")
-  elif contactId == 'create':
+  if contactId == 'create':
     response = updateName(request, contactId)
     contactId = response['contact']
-    contact = models.Contact.objects.get(id=int(contactId))
-  else: 
-    contact = models.Contact.objects.get(id=int(contactId))
+
+  contact = models.Contact.objects.get(id=int(contactId))
 
   print "contact", contact
 
@@ -169,14 +151,11 @@ def updateDetail(request, contactId):
 
 def addComment(request, contactId):
   response = None
-  if contactId == 'test':
-    contact = models.Contact(name="Carey Underwood")
-  elif contactId == 'create':
+  if contactId == 'create':
     response = updateName(request, contactId)
     contactId = response['contact']
-    contact = models.Contact.objects.get(id=int(contactId))
-  else: 
-    contact = models.Contact.objects.get(id=int(contactId))
+  
+  contact = models.Contact.objects.get(id=int(contactId))
 
   comment = request.POST['comment']
   if not comment:

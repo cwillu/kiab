@@ -4,6 +4,9 @@ import cPickle as pickle
 import django.contrib.auth.models as auth
 
 class Widget(object):
+  def __init__(self):
+    self.uuid = None
+      
   def render_generic(self):
     return "<span>%s</span>" % self.name()
 
@@ -13,16 +16,19 @@ class Widget(object):
   def create(self, *args, **kargs):
     return self.__class__(*args, **kargs)
 
+  def render(self, uuid=None):
+    assert (uuid is None) is not (self.uuid is None), "No UUID or two UUID's defined: %s, %s" % (self.uuid, uuid)
+    if uuid is None:
+      uuid = self.uuid
+      
+    return self.template("id=%s" % uuid)
+
 class Long(Widget):
   def __init__(self, data=''):
     self.data = data
+    Widget.__init__(self)
     
-  def render(self, id=None):
-    if id:
-      id = "id=%s" % id
-    else:
-      id = ''
-      
+  def template(self, id):
     return '''
     <textarea %s class="control" rows="5">%s</textarea>
     '''.strip() % (id, self.data)
@@ -30,11 +36,9 @@ class Long(Widget):
 class Short(Widget):
   def __init__(self, data=''):
     self.data = data
-  def render(self, id=None):
-    if id:
-      id = "id=%s" % id
-    else:
-      id = ''
+    Widget.__init__(self)
+    
+  def template(self, id):
     return '''
     <input %s class="control" type="text" rows="5" value="%s" />
     '''.strip() % (id, self.data)
@@ -44,7 +48,7 @@ class Comment(Widget):
     self.who = who.strip()
     self.date = when.strip()
     self.entry = data
-
+    Widget.__init__(self)
     
 widgets = dict(short=Short(), long=Long())
 
@@ -56,6 +60,15 @@ class Contact(models.Model):
   sortName = models.CharField(max_length=200)
   summary = models.TextField()
     
+  @property
+  def details(self):
+    details = list(Detail.objects.filter(contact=self))
+    return [detail.get() for detail in details]
+  
+  @property
+  def comments(self):
+    return Entry.objects.filter(contact=self)
+  
   def save(self, force_insert=False, force_update=False):
     pieces = re.findall(r'\w+', self.name)
     self.sortName = ' '.join(pieces[-1:] + pieces[:-1]) if pieces else ''

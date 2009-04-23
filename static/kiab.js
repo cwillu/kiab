@@ -18,7 +18,7 @@ kiab = {
       var widget = widget.contents().clone();
       control = $('.control', widget); 
       control[0].id = $.uuid();
-      control.blur(kiab.sendUpdate);
+      control.blur(kiab.contact.sendUpdate);
       
       widget.appendTo($('#details .detailTable'));
       
@@ -40,7 +40,7 @@ kiab = {
         complete: function (http) {
           if (http.status === 201) {
             top.location.href = http.getResponseHeader('Location');
-          }        
+          }
         }
       });
     },
