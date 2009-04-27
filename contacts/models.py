@@ -52,15 +52,28 @@ class Comment(Widget):
     
 widgets = dict(short=Short(), long=Long())
 
-
+def getOrCreate(model, **query):
+  count = len(model.objects.filter(**query))
+  assert count in [0, 1], "Query results didn't make sense: %s (%s)" % (query, count)
+  if count is 0:
+    return model(**query), True
+  else:
+    return model.objects.get(**query), False
+    
 # keep fields an order of magnitude larger than the largest input expected
 class Contact(models.Model):
   name = models.CharField(max_length=200)
   uuid = models.SlugField()
   sortName = models.CharField(max_length=200)
   summary = models.TextField()
-    
-  @property
+  
+  def setDetail(self, uuid, data):
+    detail, created = getOrCreate(Detail, uuid=uuid, contact=self)
+    detail.munch(data)
+    detail.save()
+    return created
+
+  @property 
   def details(self):
     details = list(Detail.objects.filter(contact=self))
     return [detail.get() for detail in details]
@@ -86,15 +99,20 @@ class Detail(models.Model):
   detailType = models.CharField(max_length=200, verbose_name="type")
   data = models.TextField()
   
+  def munch(self, data):
+    if '\n' in data:
+      widget = Long(data)
+    else:
+      widget = Short(data)
+    self.detail = widget
+  
   def put(self, obj):
     self.data = pickle.dumps(obj)
-  
   def get(self):
     obj = pickle.loads(str(self.data))
     obj.id = self.id
     obj.uuid = self.uuid
     return obj
-  
   detail = property(get, put)
     
 class Entry(models.Model):

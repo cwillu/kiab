@@ -107,8 +107,7 @@ def updateName(request, contactId):
   else:
     return HttpResponse(status=204)
     
-  
-def updateDetail(request, contactId):
+def getOrCreateContact(request, contactId):
   response = None
   if contactId == 'create':
     response = updateName(request, contactId)
@@ -118,44 +117,28 @@ def updateDetail(request, contactId):
 
   print "contact", contact
 
+  return contact, response
+  
+def updateDetail(request, contactId):
+  contact, response = getOrCreateContact(request, contactId)
+
   detailId = request.POST.get('update', None)
-#  detailType = request.POST['type']
   detailData = request.POST['detail'].strip()
 
   print "id", detailId
   print "detail", detailData
-  
+
   if not detailData:
     raise "delete"
-  elif '\n' in detailData:
-    detailType = 'long'
-  else:
-    detailType = 'short'
-  detailConstructor = models.widgets[detailType]
 
-  print "type", detailType
-  
-  count = len(models.Detail.objects.filter(uuid=detailId))
-  assert count in [0, 1], "How exactly is there more than one detail with this uuid? %s (%s)" % (detailId, count)
-  assert response is None or count is 0
-  if count is 0:
-    detail = models.Detail(uuid=detailId, contact=contact, detailType=detailType)
-    response = response or HttpResponse(status=205)
-  elif count is 1:
-    detail = models.Detail.objects.get(contact=contact, uuid=detailId)
-    response = HttpResponse(status=204)
-        
-  detail.put(detailConstructor.create(detailData))
-  detail.save()
-  return response
+  if contact.setDetail(detailId, detailData):
+    return response or HttpResponse(status=205)
+
+  assert not response, "Wait, we just created this contact, how was this detail already there? %s, %s" % (contact, detail)
+  return HttpResponse(status=204)
 
 def addComment(request, contactId):
-  response = None
-  if contactId == 'create':
-    response = updateName(request, contactId)
-    contactId = response['contact']
-  
-  contact = models.Contact.objects.get(id=int(contactId))
+  contact, response = getOrCreateContact(request, contactId)
 
   comment = request.POST['comment']
   if not comment:
