@@ -12,7 +12,14 @@ $(function () {
 });
 
 kiab = {
- contact: {
+  util: {
+    commonResponses: function (http) {
+      if (http.status === 201) {
+        top.location.href = http.getResponseHeader('x-location');
+      }        
+    }
+  }
+  contact: {
     session_uuid: $.uuid(),
     addWidget: function (widget) {
       var widget = widget.contents().clone();
@@ -22,7 +29,7 @@ kiab = {
       
       widget.appendTo($('#details .detailTable'));
       
-      $('input', widget).animate({ 
+      $('input', widget).focus().animate({ 
         backgroundColor: '#afa'
       }, 30).animate({ 
         backgroundColor: '#fff'
@@ -38,9 +45,7 @@ kiab = {
           uuid: $("#details input[name='uuid']")[0].value
         },
         complete: function (http) {
-          if (http.status === 201) {
-            top.location.href = http.getResponseHeader('Location');
-          }
+          kiab.util.commonResponses(http);
         }
       });
     },
@@ -53,9 +58,7 @@ kiab = {
           uuid: $("#details input[name='uuid']")[0].value
         },
         complete: function (http) {
-          if (http.status === 201) {
-            top.location.href = http.getResponseHeader('Location');
-          }        
+          kiab.util.commonResponses(http);
         }
       });
     },  
@@ -70,10 +73,10 @@ kiab = {
           uuid: $("#details input[name='uuid']")[0].value
         },
         complete: function (http) {
+          kiab.util.commonResponses(http);
+
           if (http.status === 205) {
             window.location.reload(false);
-          } else if (http.status === 201) {
-            top.location.href = http.getResponseHeader('Location');
           }        
         }      
       });

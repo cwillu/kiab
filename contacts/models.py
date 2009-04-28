@@ -68,10 +68,42 @@ class Contact(models.Model):
   summary = models.TextField()
   
   def setDetail(self, uuid, data):
+    '''
+      Set the detail 'uuid' on this contact.
+      Returns:
+      * True if detail didn't exist
+      * None if value if detail is updated
+      * False if value is deleted or not created
+    '''
     detail, created = getOrCreate(Detail, uuid=uuid, contact=self)
+    if not data:
+      if created:
+        return None #Deleting a non-existing item==no-op
+    
+      detail.delete()
+      return False
+      
     detail.munch(data)
     detail.save()
-    return created
+    return created or None
+
+  def setComment(self, uuid, data):
+    '''
+      Set the detail 'uuid' on this contact.
+      Returns:
+      * True if detail didn't exist
+      * None if value if detail is updated
+      * False if value is deleted or not created
+    '''
+    if not data:
+      return False
+      
+    comment, created = getOrCreate(Comment, uuid=uuid, contact=self)
+      
+    comment.munchAndAppend(data)
+    comment.save()
+    return created or None
+  
 
   @property 
   def details(self):
@@ -120,6 +152,11 @@ class Entry(models.Model):
   date = models.DateField()
   who = models.ForeignKey('auth.User', null=True)
   data = models.TextField()
+
+  def munchAndAppend(self, data):
+    entry = self.entry
+    entry.append(data)
+    self.entry = entry
   
   def put(self, obj):
     self.data = pickle.dumps(obj)

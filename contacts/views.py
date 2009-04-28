@@ -101,8 +101,8 @@ def updateName(request, contactId):
   contact.save()
   if contactId == 'create':
     response = HttpResponse(status=201)
-    response['Location'] = reverse(showContact, args=[contact.id])
-    response['contact'] = contact.id
+    response['x-location'] = reverse(showContact, args=[contact.id])
+    response['x-contact'] = contact.id
     return response
   else:
     return HttpResponse(status=204)
@@ -118,7 +118,7 @@ def getOrCreateContact(request, contactId):
   print "contact", contact
 
   return contact, response
-  
+
 def updateDetail(request, contactId):
   contact, response = getOrCreateContact(request, contactId)
 
@@ -128,13 +128,12 @@ def updateDetail(request, contactId):
   print "id", detailId
   print "detail", detailData
 
-  if not detailData:
-    raise "delete"
-
-  if contact.setDetail(detailId, detailData):
+  if contact.setDetail(detailId, detailData) is not False:
     return response or HttpResponse(status=205)
 
-  assert not response, "Wait, we just created this contact, how was this detail already there? %s, %s" % (contact, detail)
+  if not detailData:
+    assert not response, "Wait, we just created this contact, how was this detail already there? %s, %s" % (contact, detail)
+
   return HttpResponse(status=204)
 
 def addComment(request, contactId):
