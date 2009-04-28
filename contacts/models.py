@@ -108,8 +108,11 @@ class Contact(models.Model):
 #    assert entry.entry is not None
 
       
-    comment, created = getOrCreate(Comment, uuid=uuid, contact=self)
-      
+    comment, created = getOrCreate(Entry, uuid=uuid, contact=self)
+    
+    if not comment.date:
+      comment.date = "2008-10-10"
+    
     comment.munchAndAppend(data)
     comment.save()
     return created or None
@@ -158,13 +161,14 @@ class Detail(models.Model):
     
 class Entry(models.Model):
   contact = models.ForeignKey(Contact)
+  uuid = models.SlugField()
   date = models.DateField()
   who = models.ForeignKey('auth.User', null=True)
   data = models.TextField()
 
   def munchAndAppend(self, data):
     entry = self.entry
-    entry.append(data)
+    entry += data
     self.entry = entry
   
   def put(self, obj):
