@@ -55,7 +55,6 @@ def makeName():
   words[1] = words[1][0]
   return ' '.join(words)
   
-
 testComments = [
   models.Comment(makeName(), '2009-01-27', lorem_ipsum.paragraphs(1)),
   models.Comment(makeName(), '2009-01-29', lorem_ipsum.paragraphs(3)),
@@ -71,6 +70,20 @@ def blankContact(request):
   }
   return HttpResponse(template.render(**context))
 
+commentTemplate = '''
+<div class="comment">
+  <div class="header">
+    <span class="detail">{{ comment.who }}</span><span class="label">, on</span>
+    <span class="detail">{{ comment.date }}</span><span class="label">:</span>
+  </div>
+  <div class="content">
+  {% for line in comment.entry -%}
+    <p>{{ line|wordwrap(80) }}</p>
+  {%- endfor %}
+  </div>
+</div>
+'''
+
 def showContact(request, contactId):
   contact = models.Contact.objects.get(id=int(contactId))
   
@@ -78,6 +91,7 @@ def showContact(request, contactId):
   context = {
     'uuid': contact.uuid,
     'contact': contact,
+    'commentTemplate': commentTemplate, 
     'available': models.widgets.values(),
   }
   return HttpResponse(template.render(**context))
@@ -106,6 +120,8 @@ def updateName(request, contactId):
     return response
   else:
     return HttpResponse(status=204)
+
+
     
 def getOrCreateContact(request, contactId):
   response = None
@@ -142,19 +158,16 @@ def addComment(request, contactId):
   comment = request.POST['comment']
   if not comment:
     return HttpResponse(status=204)
-    
-  print comment
-  entry = models.Entry(contact=contact, date="2008-10-10") #todo, uuid
-  entries = entry.entry
-  entries.append(comment)
-  entry.entry = entries
-  print entry.entry
-  entry.save()
-  assert entry.entry is not None
+
   if False:  #existing entry
-    return HttpResponse(status=201)
-  else:
-    return response or HttpResponse(status=205)
+    response = HttpResponse(status=201)
+  elif not response:
+    response = HttpResponse(status=205)
+  
+  snippet = autoComment(contact, [comment], request)
+  response.write(snippet)
+  return response
+  
     
 #  class Entry(models.Model):
 #    contact = models.ForeignKey(Contact)
@@ -162,24 +175,12 @@ def addComment(request, contactId):
 #    who = models.ForeignKey('auth.User')
 #    entry = models.TextField()
 
-def comment(request, contactId):
-  contact = models.Contact.objects.get(id=int(contactId))
-  if not contact:
-    return
-    
-  entry = models.Entry(contact=contact, who=None, when="10/10/2010")
-  #entry.entry = request.?
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+def autoComment(contact, contents, request):
+  print "Adding %s" % contents
+  instance_uuid = request.POST['instance_uuid']
+  assert instance_uuid
+
+  comment = contact.addComment(instance_uuid, contents)
+
+  template = jinja.get_template('contacts/comment.html')
+  return template.render(comment=comment)

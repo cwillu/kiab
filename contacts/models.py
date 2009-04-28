@@ -87,7 +87,7 @@ class Contact(models.Model):
     detail.save()
     return created or None
 
-  def setComment(self, uuid, data):
+  def addComment(self, uuid, data):
     '''
       Set the detail 'uuid' on this contact.
       Returns:
@@ -97,13 +97,22 @@ class Contact(models.Model):
     '''
     if not data:
       return False
+    
+      
+#    entry = models.Entry(contact=contact, date="2008-10-10") #todo, uuid
+#    entries = entry.entry
+#    entries += contents
+#    entry.entry = entries
+#    print "Resulting %s" % entry.entry
+#    entry.save()
+#    assert entry.entry is not None
+
       
     comment, created = getOrCreate(Comment, uuid=uuid, contact=self)
       
     comment.munchAndAppend(data)
     comment.save()
     return created or None
-  
 
   @property 
   def details(self):

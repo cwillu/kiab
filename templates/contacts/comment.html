@@ -1,0 +1,12 @@
+<div class="comment">
+  <div class="header">
+    <span class="detail">{{ comment.who }}</span><span class="label">, on</span>
+    <span class="detail">{{ comment.date }}</span><span class="label">:</span>
+  </div>
+  <div class="content">
+  {% for line in comment.entry -%}
+    <p>{{ line|wordwrap(80) }}</p>
+  {%- endfor %}
+  </div>
+</div>
+

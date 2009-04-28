@@ -18,9 +18,9 @@ kiab = {
         top.location.href = http.getResponseHeader('x-location');
       }        
     }
-  }
+  },
   contact: {
-    session_uuid: $.uuid(),
+    instance_uuid: $.uuid(),
     addWidget: function (widget) {
       var widget = widget.contents().clone();
       control = $('.control', widget); 
@@ -40,6 +40,7 @@ kiab = {
         type: "POST",
         url: "updateDetail",
         data: {
+          instance_uuid: kiab.instance_uuid,
           update: this.id,
           detail: this.value,
           uuid: $("#details input[name='uuid']")[0].value
@@ -54,6 +55,7 @@ kiab = {
         type: "POST",
         url: 'updateName',
         data: {
+          instance_uuid: kiab.instance_uuid,        
           name: this.value,
           uuid: $("#details input[name='uuid']")[0].value
         },
@@ -63,21 +65,23 @@ kiab = {
       });
     },  
     sendComment: function () {
-       $.ajax({
+      var textarea = this;
+      $.ajax({
         type: "POST",
         url: 'addComment',
         data: {
-          session_uuid: kiab.session_uuid,
+          instance_uuid: kiab.instance_uuid,
           uuid: this.id,
           comment: this.value,
           uuid: $("#details input[name='uuid']")[0].value
         },
         complete: function (http) {
           kiab.util.commonResponses(http);
-
+          
           if (http.status === 205) {
+            textarea.value = '';
             window.location.reload(false);
-          }        
+          }
         }      
       });
     }
@@ -88,7 +92,7 @@ kiab = {
         kiab.search.initialValue = this.value;
       }
       if (this.value === kiab.search.initialValue) {
-        this.value = ''
+        this.value = '';
       } else {
         $(this).select();
       }

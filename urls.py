@@ -20,7 +20,7 @@ urlpatterns = patterns('',
 if not settings.PRODUCTION:
   urlpatterns += patterns(
     "django.views",
-      url(r"%s(?P<path>.*)/$" % settings.MEDIA_URL[1:], "static.serve", {
+      url(r"%s(?P<path>.*)$" % settings.MEDIA_URL[1:], "static.serve", {
           "document_root": settings.MEDIA_ROOT,
       })
   )
