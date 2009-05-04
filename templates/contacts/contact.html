@@ -6,8 +6,9 @@
     <title>{% block title %}Contact{% endblock %}</title>
     
     <style type="text/css">
-      @import "/static/css/style.css";
+      @import "/media/style.css";
     </style>
+{#
     <style type="text/css" media="screen">
       @import "/static/css/screen.css";
     </style>
@@ -17,128 +18,8 @@
     <style type="text/css">
       @import "/static/css/wiab.css";
     </style>
+#}
     <style type="text/css">
-      body {
-        font-size: 88%;
-        font: 14px Helvetica, sans-serif;
-      }
-      body > div {
-        margin-top: 1em;
-      } 
-      table {
-        width: 60%;
-        padding-left: 5px;    
-      }
-      td {
-        vertical-align: top;
-        border: 0;
-        padding: 0px 2px;
-        white-space: nowrap;
-        font-weight: 100;
-        margin: 0;
-        table-spacing: 1px;
-      }
-      .delete a {
-        color: #f99;
-      }
-      .delete a:hover {
-        color: #f00;
-      }
-      
-      b {
-        font-weight: 800;
-      }
-      
-      .action a {
-        text-decoration: none;
-        color: none;
-      }
-      
-      body > div.header {
-        float: right;
-        
-        margin: 0;         
-      }
-      body > .header span {
-      }
-      body > .header input{
-        width: 30em;              
-      }
-      
-      .details input.heading  {
-        border: 1px solid #fff;
-        font-size: 150%;
-        font-weight: 600;
-        width: 60%;
-      }
-      .details input {
-        width: 100%;
-        border: 1px solid #fff;
-        border-bottom: 1px dashed #888;        
-      }
-      .details textarea {
-        width: 100%;
-        border: 1px solid #fff;
-        border: 1px dotted #ddd;        
-        border-bottom: 1px dashed #888;        
-      }
-      .details input:hover,.details textarea:hover {
-        border: 1px dotted #888;        
-        border-bottom: 1px dashed #000;        
-      }
-      
-      div.palette {
-        background-color: #bbb;
-        height: 1.5em;
-      }
-      .palette > div {
-        width: 7em;
-        display: inline-block;
-        border-top: 1px solid #bbb;
-        border-right: 1px dashed #ddd;
-        text-align: center;
-        height: 1.5em;
-      }
-      .palette .widget:hover {
-        margin: -1px;
-        margin-right: 0px;
-        border: 1px dotted #888;
-      }
-      
-      .palette .widgetPrototype {
-        display: none;
-      }
-      
-      #comments {
-        margin-top: 1em;
-      }
-      #comments * {
-        margin-top: .2em;
-      }
-      #comments .header {
-        background-color: #ddd;
-        padding-left: 5px;
-        height: 1.5em;         
-      }
-      .palette .label > span, #comments .header > .label {
-        color: #666;
-        font-size: 80%;        
-      }
-      #comments .header > .detail {
-        color: #333;
-        display: inline-block;
-      }
-      #comments .content {
-        margin-left: 1em;
-      } 
-      #comments p {
-        white-space: pre;
-        margin-bottom: .7em;     
-      }
-      #comments textarea {
-        width: 40em;
-        height: 10em;
-      }
     </style>
     <script src="/media/jquery-latest.js"></script>
     <script src="/media/jquery.color.js"></script>
@@ -148,8 +29,11 @@
 </head>
 <body>
   <div class="header">
-    <form action="/search/" method="POST">
-      <input type="text" name="search" value="Search for another contact..." />
+    <form action="/contact/search/" method="POST">
+      <input type="text" name="search" value="Search for another contact" />
+    </form>
+    <form action="/contact/create/" method="GET">
+      <button type="submit">Make a new contact</button>
     </form>
   </div>
 
@@ -159,8 +43,8 @@
     <table class="detailTable" style="height: 100px;">
     {% for row in contact.details |batch(2,) -%} 
       <tr>
-      {%- for widget in row -%}
-        <td>{{ widget.render() if widget }}</td><td class="action delete"><a href="#">[x]</a></td>
+      {%- for detail in row -%}
+        <td>{{ render(detail) if detail }}</td><td class="action delete"><a href="#">[x]</a></td>
       {%- endfor -%}
       </tr>
     {%- endfor -%}
@@ -172,7 +56,7 @@
       <div class="widget">
         <span>{{ widget.render_generic() }}</span>
         <div class="widgetPrototype">
-          <table class="detailTable"><tr><td>{{ widget.render(widget.name()+'Widget') }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
+          <table class="detailTable"><tr><td>{{ render('', widget.name()+'Widget') }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
         </div>
       </div>
     {%- endfor -%}

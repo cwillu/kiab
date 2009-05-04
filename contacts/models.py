@@ -115,7 +115,7 @@ class Contact(models.Model):
     
     comment.munchAndAppend(data)
     comment.save()
-    return created or None
+    return comment
 
   @property 
   def details(self):
@@ -144,16 +144,15 @@ class Detail(models.Model):
   data = models.TextField()
   
   def munch(self, data):
-    if '\n' in data:
-      widget = Long(data)
-    else:
-      widget = Short(data)
-    self.detail = widget
+    self.detail = data
   
   def put(self, obj):
     self.data = pickle.dumps(obj)
   def get(self):
-    obj = pickle.loads(str(self.data))
+    class Unicode_(unicode):
+      pass
+    obj = Unicode_(pickle.loads(str(self.data)))
+      
     obj.id = self.id
     obj.uuid = self.uuid
     return obj

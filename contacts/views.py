@@ -8,8 +8,8 @@ from django.contrib.auth import decorators as auth
 from django.contrib.webdesign import lorem_ipsum
 from django import http
 from django.core.urlresolvers import reverse
-from jinja2 import Environment, FileSystemLoader
-jinja = Environment(loader=FileSystemLoader(settings.TEMPLATE_DIRS))
+from jinja2 import Environment, FileSystemLoader, Markup
+jinja = Environment(loader=FileSystemLoader(settings.TEMPLATE_DIRS), autoescape=True)
 
 from uuid import uuid4 as uuid
 
@@ -22,7 +22,7 @@ import models
 
 class Widget(object):
   def render_generic(self):
-    return "<span>%s</span>" % self.name()
+    return Markup(jinja.from_string("<span>{{ name }}</span>").render(name=self.name()))
 
   def name(self):
     return self.__class__.__name__
@@ -34,13 +34,20 @@ class Short(Widget):
   def __init__(self, data=''):
     self.data = data
   def render(self, id=None):
-    if id:
-      id = "id=%s" % id
-    else:
-      id = ''
-    return '''
-    <input %s class="control" type="text" rows="5" value="%s" />
-    '''.strip() % (id, self.data)
+    return Markup(jinja.from_string('''
+    <input {% if id %}id="{{id}}" {%endif -%} class="control" type="text" rows="5" value="{{value}}" />
+    ''').render(id=id, value=self.data))
+
+widgets = dict(short=Short())
+
+
+def renderDetail(detail, id=None):
+  if not id:
+    id = detail.id
+  print detail
+  widget = Short(detail)
+  print Markup(widget.render(id))
+  return Markup(widget.render(id))
 
 testDetails = [
   models.Long('''1115 Cairns Ave\nSaskatoon, SK\nS7H 4G3'''.strip()),
@@ -65,8 +72,9 @@ def blankContact(request):
   template = jinja.get_template('contacts/contact.html')
   context = {
     'contact': models.Contact(),
+    'render': renderDetail,
     'uuid': uuid(),
-    'available': models.widgets.values(),
+    'available': widgets.values(),
   }
   return HttpResponse(template.render(**context))
 
@@ -90,9 +98,10 @@ def showContact(request, contactId):
   template = jinja.get_template('contacts/contact.html')
   context = {
     'uuid': contact.uuid,
+    'render': renderDetail,
     'contact': contact,
     'commentTemplate': commentTemplate, 
-    'available': models.widgets.values(),
+    'available': widgets.values(),
   }
   return HttpResponse(template.render(**context))
 
@@ -103,8 +112,9 @@ def updateName(request, contactId):
   print "id", contactId
   
   if contactId == 'create':
-    print models.Contact.objects.filter(uuid=contact_uuid)
-    assert not models.Contact.objects.filter(uuid=contact_uuid), contact_uuid
+    while models.Contact.objects.filter(uuid=contact_uuid):
+      #user hit the back button, or the nearly impossible happened
+      contact_uuid = str(uuid())
     contact = models.Contact(uuid=contact_uuid)    
   elif contactId is not None:
     contact = models.Contact.objects.get(id=int(contactId), uuid=contact_uuid)
@@ -127,7 +137,7 @@ def getOrCreateContact(request, contactId):
   response = None
   if contactId == 'create':
     response = updateName(request, contactId)
-    contactId = response['contact']
+    contactId = response['x-contact']
 
   contact = models.Contact.objects.get(id=int(contactId))
 
@@ -150,7 +160,12 @@ def updateDetail(request, contactId):
   if not detailData:
     assert not response, "Wait, we just created this contact, how was this detail already there? %s, %s" % (contact, detail)
 
-  return HttpResponse(status=204)
+  print "removed detail"
+  response = HttpResponse(status=204)
+  snippet = autoComment(contact, ["[Removed detail]"], request)
+  response.write(snippet)
+
+  return response
 
 def addComment(request, contactId):
   contact, response = getOrCreateContact(request, contactId)
@@ -165,6 +180,7 @@ def addComment(request, contactId):
     response = HttpResponse(status=205)
   
   snippet = autoComment(contact, [comment], request)
+  print snippet
   response.write(snippet)
   return response
   

@@ -14,12 +14,19 @@ $(function () {
 kiab = {
   util: {
     commonResponses: function (http) {
+      if (http.status / 100 >> 0 === 2) {
+        html = http.responseText;
+        $(html).insertBefore($('#comments .header:last'));
+      }
+
       if (http.status === 201) {
-        top.location.href = http.getResponseHeader('x-location');
+        if (http.getResponseHeader('x-location')) {
+          top.location.href = http.getResponseHeader('x-location');
+        }        
       }        
     }
   },
-  contact: {
+  contact: {  
     instance_uuid: $.uuid(),
     addWidget: function (widget) {
       var widget = widget.contents().clone();
@@ -45,9 +52,7 @@ kiab = {
           detail: this.value,
           uuid: $("#details input[name='uuid']")[0].value
         },
-        complete: function (http) {
-          kiab.util.commonResponses(http);
-        }
+        complete: kiab.util.commonResponses,        
       });
     },
     sendNameUpdate: function () {
@@ -59,9 +64,7 @@ kiab = {
           name: this.value,
           uuid: $("#details input[name='uuid']")[0].value
         },
-        complete: function (http) {
-          kiab.util.commonResponses(http);
-        }
+        complete: kiab.util.commonResponses,        
       });
     },  
     sendComment: function () {
@@ -77,10 +80,8 @@ kiab = {
         },
         complete: function (http) {
           kiab.util.commonResponses(http);
-          
-          if (http.status === 205) {
+          if (http.status / 100 >> 0 === 2) {
             textarea.value = '';
-            window.location.reload(false);
           }
         }      
       });
