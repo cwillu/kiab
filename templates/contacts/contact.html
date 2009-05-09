@@ -51,10 +51,9 @@
     </table>
   </form>
   <div class="palette">
-    <div class="label"><span>Add another:</span></div>
     {%- for widget in available -%}    
       <div class="widget">
-        <span>{{ widget.render_generic() }}</span>
+        <span>Add another detail</span>
         <div class="widgetPrototype">
           <table class="detailTable"><tr><td>{{ render('', widget.name()+'Widget') }}</td><td class="action delete"><a href="#">[x]</a></td><td></td></tr></table>
         </div>

@@ -2,55 +2,7 @@ from django.db import models
 import re
 import cPickle as pickle
 import django.contrib.auth.models as auth
-
-class Widget(object):
-  def __init__(self):
-    self.uuid = None
-      
-  def render_generic(self):
-    return "<span>%s</span>" % self.name()
-
-  def name(self):
-    return self.__class__.__name__
-    
-  def create(self, *args, **kargs):
-    return self.__class__(*args, **kargs)
-
-  def render(self, uuid=None):
-    assert (uuid is None) is not (self.uuid is None), "No UUID or two UUID's defined: %s, %s" % (self.uuid, uuid)
-    if uuid is None:
-      uuid = self.uuid
-      
-    return self.template("id=%s" % uuid)
-
-class Long(Widget):
-  def __init__(self, data=''):
-    self.data = data
-    Widget.__init__(self)
-    
-  def template(self, id):
-    return '''
-    <textarea %s class="control" rows="5">%s</textarea>
-    '''.strip() % (id, self.data)
-  
-class Short(Widget):
-  def __init__(self, data=''):
-    self.data = data
-    Widget.__init__(self)
-    
-  def template(self, id):
-    return '''
-    <input %s class="control" type="text" rows="5" value="%s" />
-    '''.strip() % (id, self.data)
-
-class Comment(Widget):
-  def __init__(self, who, when, data):
-    self.who = who.strip()
-    self.date = when.strip()
-    self.entry = data
-    Widget.__init__(self)
-    
-widgets = dict(short=Short(), long=Long())
+from django.db import transaction
 
 def getOrCreate(model, **query):
   count = len(model.objects.filter(**query))
@@ -142,7 +94,7 @@ class Detail(models.Model):
   contact = models.ForeignKey(Contact)
   detailType = models.CharField(max_length=200, verbose_name="type")
   data = models.TextField()
-  
+
   def munch(self, data):
     self.detail = data
   
@@ -156,6 +108,7 @@ class Detail(models.Model):
     obj.id = self.id
     obj.uuid = self.uuid
     return obj
+    ob
   detail = property(get, put)
     
 class Entry(models.Model):
@@ -180,5 +133,65 @@ class Entry(models.Model):
     obj = pickle.loads(str(self.data))
     return obj
   entry = property(get, put)
+
+
+class SearchIndexQueue(models.Model):
+  contact = models.ForeignKey(Contact)
+
+class SearchIndex(models.Model):
+  piece = models.CharField()
+  contacts = models.ManyToManyField(Contact)
+
+  @transaction.commit_manually
+  def touch(self, contact):
+    try:
+      getOrCreate(SearchIndexQueue, contact=contact).save() 
+      contact.searchindex_set.delete()
+    except:
+      transaction.rollback()
+      raise
+    else:
+      transaction.commit()
+  
+  def search(self, query):
+  
+    #    jQuery.query = function (query) {
+    #      var tokens = query.toLowerCase().split(/\s+/g);  
+    #
+    #      var bitmap = $.map(new Array(index[0].length), function (value, index) { return index; });
+    #      $.each(tokens, function (i, token) {
+    #        var hits = [];
+    #        if (token) {
+    #          $.each(index[1], function (key, value) {
+    #            if (key.substr(0, token.length) === token) {
+    #              hits = hits.concat(value);
+    #            }
+    #          });
+    #        }    
+    #        hits = $.unique(hits);
+    #        bitmap = $.grep(bitmap, function (val, _) {
+    #          return $.inArray(val, hits) >= 0;
+    #        });
+    #      });
+    #      
+    #      return $.map(bitmap, function(v, i) {
+    #        return [index[0][v]];
+    #      });
+    #    } 
   
 classes = [Contact, Detail, Entry]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

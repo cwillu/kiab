@@ -49,25 +49,6 @@ def renderDetail(detail, id=None):
   print Markup(widget.render(id))
   return Markup(widget.render(id))
 
-testDetails = [
-  models.Long('''1115 Cairns Ave\nSaskatoon, SK\nS7H 4G3'''.strip()),
-  models.Short('306-251-0744'),
-  models.Short('306-373-0552'),
-  models.Short('cwillu@cwillu.com'),
-  models.Short('cwillu@gmail.com'),
-]
-
-def makeName():
-  words = lorem_ipsum.words(3, 0).title().split()
-  words[1] = words[1][0]
-  return ' '.join(words)
-  
-testComments = [
-  models.Comment(makeName(), '2009-01-27', lorem_ipsum.paragraphs(1)),
-  models.Comment(makeName(), '2009-01-29', lorem_ipsum.paragraphs(3)),
-  models.Comment(makeName(), '2009-03-03', lorem_ipsum.paragraphs(1)),
-]
-
 def blankContact(request):
   template = jinja.get_template('contacts/contact.html')
   context = {
@@ -104,6 +85,9 @@ def showContact(request, contactId):
     'available': widgets.values(),
   }
   return HttpResponse(template.render(**context))
+
+def search(request, query):
+  pass
 
 def updateName(request, contactId):
   contact_uuid = request.POST['uuid']
