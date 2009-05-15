@@ -16,7 +16,9 @@ kiab = {
     commonResponses: function (http) {
       if (http.status / 100 >> 0 === 2) {
         html = http.responseText;
-        $(html).insertBefore($('#comments .header:last'));
+        if (html) {
+          $(html).insertBefore($('#comments .header:last'));
+        }
       }
 
       if (http.status === 201) {
